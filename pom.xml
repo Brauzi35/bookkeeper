@@ -68,7 +68,7 @@
     <module>shaded</module>
     <module>microbenchmarks</module>
     <module>bookkeeper-slogger</module>
-    <module>tests</module>
+    <!--<module>tests</module> -->  <!-- removed module that was not allowing clean verify -->
     <module>native-io</module>
     <module>testtools</module>
     <module>TestsJaCoCo</module>

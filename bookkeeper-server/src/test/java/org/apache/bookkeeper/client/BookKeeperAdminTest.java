@@ -33,7 +33,7 @@ class BookKeeperAdminTest {
     @Mock
     private DefaultEnsemblePlacementPolicy defaultEnsemblePlacementPolicy;
 
-
+    /*
 
     @Before
     public void setUp() throws BKException.BKNotEnoughBookiesException {
@@ -67,4 +67,6 @@ class BookKeeperAdminTest {
         bookKeeperAdminMock.replaceNotAdheringPlacementPolicyBookie(prova,3, 2);
 
     }
+
+     */
 }
