@@ -161,7 +161,7 @@ public class BookieImpl extends BookieCriticalThread implements Bookie {
                 throw new IOException(err);
             }
             if (!dir.mkdirs()) {
-                String err = "Unable to create directory " + dir;
+                String err = "Unable to create directory" + dir;
                 LOG.error(err);
                 throw new IOException(err);
             }
