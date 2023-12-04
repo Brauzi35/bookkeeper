@@ -51,7 +51,7 @@ public class BookieImplRecoveryAddEntryTest {
                 {buildEntry(Objects.INVALID, 1), getCallback(Objects.VALID), "ctx", "key".getBytes(), true},
                 {buildEntry(Objects.VALID, 1), getCallback(Objects.INVALID), "ctx", "key".getBytes(), true},
                 {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), null, "key".getBytes(), true},
-                {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), "ctx", "".getBytes(), false},
+                {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), "ctx", "".getBytes(), true}, //given key does not match expected key
                 {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), "ctx", null, true}
 
 
@@ -96,6 +96,7 @@ public class BookieImplRecoveryAddEntryTest {
         }
     }
 
+    //todo: mettere before e non chiamarlo nel costruttore
     private static void init() {
         //create bookieImpl using existing setup classes from bookkeeper apache
         try {
@@ -123,11 +124,11 @@ public class BookieImplRecoveryAddEntryTest {
 
 
     @Test()
-    public void recoveryAddEntry(){
+    public void testRecoveryAddEntry(){
 
         boolean isCorrect = true;
 
-        if (!this.expExc){
+        if (!this.expExc){ //exception expected
             try {
                 bookieimpl.recoveryAddEntry(this.bb, this.cb, this.ctx, this.mk);
             } catch (IOException | InterruptedException | BookieException e) {
@@ -140,6 +141,8 @@ public class BookieImplRecoveryAddEntryTest {
             }
             Assert.assertTrue(isCorrect);
 
+        } else{
+            //todo test sbagliato! non controllo mai se non mi aspetto un'eccezione
         }
 
     }
