@@ -31,6 +31,7 @@ public class BufferedChannelReadTest {
     private int lenght;
     private BufferedChannel bufferedChannel;
     private File temp;
+    private boolean excExp;
 
 
     enum Objects{
@@ -65,7 +66,7 @@ public class BufferedChannelReadTest {
         return log;
     }
 
-    public BufferedChannelReadTest(ByteBufAllocator allocator, FileChannel fc, int writeCapacity, long unpersistedBytesBound, ByteBuf dest, long pos, int lenght) {
+    public BufferedChannelReadTest(ByteBufAllocator allocator, FileChannel fc, int writeCapacity, long unpersistedBytesBound, ByteBuf dest, long pos, int lenght, boolean excExp) {
         this.allocator = allocator;
         this.fc = fc;
         this.writeCapacity = writeCapacity;
@@ -81,6 +82,7 @@ public class BufferedChannelReadTest {
         this.dest = dest;
         this.lenght = lenght;
         this.pos = pos;
+        this.excExp = excExp;
 
     }
 
@@ -90,9 +92,9 @@ public class BufferedChannelReadTest {
         return Arrays.asList(new Object[][]{
                 //ByteBufAllocator allocator, FileChannel fc, int writeCapacity, long unpersistedBytesBound, ByteBuf dest, long pos, int lenght
 
-                {bbAllocator(Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, Unpooled.buffer(1024, 1024), 0, 124},
-
-
+                {bbAllocator(Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, Unpooled.buffer(1024, 1024), 0, 124, false},
+                {bbAllocator(Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, Unpooled.buffer(1024, 1024), -1, 124, true},
+                {bbAllocator(Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, Unpooled.buffer(1024, 1024), 1025, 124, true},
 
         });
     }
@@ -100,8 +102,12 @@ public class BufferedChannelReadTest {
     @Test
     public void testRead() {
 
-        ByteBuf writeBuf = Unpooled.buffer(this.lenght, this.lenght);
-        byte [] data = new byte[this.lenght];
+        int lenW = 1024;
+        if(this.lenght >= 0){
+            lenW = this.lenght;
+        }
+        ByteBuf writeBuf = Unpooled.buffer(lenW, lenW);
+        byte [] data = new byte[lenW];
         Random random = new Random();
         random.nextBytes(data);
         writeBuf.writeBytes(data);
@@ -114,9 +120,13 @@ public class BufferedChannelReadTest {
             int res = this.bufferedChannel.read(this.dest, this.pos, this.lenght);
             System.out.println(res);
             Assert.assertEquals(this.lenght, res);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-            //todo check expected exception
+        } catch (IOException | IllegalArgumentException e) {
+            if(this.excExp == true){
+                e.printStackTrace();
+                Assert.assertTrue(this.excExp); //always true, the expected behaviour has been verified
+            }else{
+                Assert.fail("test failed");
+            }
         }
 
     }
