@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 
+import static org.apache.bookkeeper.bookie.BufferedChannelUtil.*;
+
 @RunWith(Parameterized.class)
 public class BufferedChannelReadTest {
 
@@ -40,31 +42,9 @@ public class BufferedChannelReadTest {
 
     }
 
-    private static ByteBufAllocator bbAllocator(Objects objects){
-        switch (objects){
-            case VALID:
-                return UnpooledByteBufAllocator.DEFAULT;
-            case INVALID:
 
-                UnpooledByteBufAllocator mockUBBA = Mockito.mock(UnpooledByteBufAllocator.class);
-                Mockito.doReturn(null).when(mockUBBA).directBuffer(Mockito.anyInt());
-                return mockUBBA; //in realtà non è proprio invalid...
-            default:
-                return null;
-        }
-    }
 
-    private static File createTempFile() {
-        File log = null;
-        try {
-            log = File.createTempFile("file", "log");
-        } catch (IOException e) {
-            Assert.fail("undesired exception in tempFile creation, something went wrong");
-            e.printStackTrace();
-        }
-        log.deleteOnExit();
-        return log;
-    }
+
 
     public BufferedChannelReadTest(ByteBufAllocator allocator, FileChannel fc, int writeCapacity, long unpersistedBytesBound, ByteBuf dest, long pos, int lenght, boolean excExp) {
         this.allocator = allocator;
@@ -92,9 +72,27 @@ public class BufferedChannelReadTest {
         return Arrays.asList(new Object[][]{
                 //ByteBufAllocator allocator, FileChannel fc, int writeCapacity, long unpersistedBytesBound, ByteBuf dest, long pos, int lenght
 
-                {bbAllocator(Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, Unpooled.buffer(1024, 1024), 0, 124, false},
-                {bbAllocator(Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, Unpooled.buffer(1024, 1024), -1, 124, true},
-                {bbAllocator(Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, Unpooled.buffer(1024, 1024), 1025, 124, true},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), -1, -1, false},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), -1, 0, false},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), -1, 1, true},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), 0, -1, false},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), 0, 0, false},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), 0, 1, false}, //5
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), 1, -1, false},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), 1, 0, false},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), 1, 1, true},
+
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.INVALID), -1, -1, false}, //9
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.INVALID), -1, 0, false},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.INVALID), -1, 1, true},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.INVALID), 0, -1, false},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.INVALID), 0, 0, false},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.INVALID), 0, 1, true}, //14
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.INVALID), 1, -1, false},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.INVALID), 1, 0, false},
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.INVALID), 1, 1, true},
+
+
 
         });
     }
@@ -102,7 +100,7 @@ public class BufferedChannelReadTest {
     @Test
     public void testRead() {
 
-        int lenW = 1024;
+        int lenW = 1;
         if(this.lenght >= 0){
             lenW = this.lenght;
         }
@@ -111,17 +109,27 @@ public class BufferedChannelReadTest {
         Random random = new Random();
         random.nextBytes(data);
         writeBuf.writeBytes(data);
+
+        int neg = 0; //apparently, if lenght is -1 read returns 0, so we need to check that
         try {
             this.bufferedChannel.write(writeBuf);
         } catch (IOException e) {
+            //todo: specialize this catch
             throw new RuntimeException(e);
         }
         try {
             int res = this.bufferedChannel.read(this.dest, this.pos, this.lenght);
             System.out.println(res);
-            Assert.assertEquals(this.lenght, res);
-        } catch (IOException | IllegalArgumentException e) {
-            if(this.excExp == true){
+            if(this.excExp){
+                //if i was expecting an exception but i didn't get one, the test shoiuld fail
+                Assert.fail("was expecting an exception but didn't get one");
+            }
+            if(this.lenght<0){
+                Assert.assertEquals(neg, res);
+            }else{ Assert.assertEquals(this.lenght, res); }
+
+        } catch (IOException | IllegalArgumentException  e) {
+            if(this.excExp){
                 e.printStackTrace();
                 Assert.assertTrue(this.excExp); //always true, the expected behaviour has been verified
             }else{

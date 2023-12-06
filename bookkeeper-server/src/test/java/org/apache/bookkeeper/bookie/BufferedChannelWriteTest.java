@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,6 +30,7 @@ public class BufferedChannelWriteTest {
     private BufferedChannel bufferedChannel;
     private ByteBuf src;
     private boolean expExc;
+    private static int len = 10;
 
 
     enum Objects{
@@ -44,10 +46,12 @@ public class BufferedChannelWriteTest {
                 //ByteBufAllocator allocator, FileChannel fc, int writeCapacity, long unpersistedBytesBound, ByteBuf src, boolean expExc
 
                 {BufferedChannelUtil.bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(BufferedChannelUtil.createTempFile(), "rw").getChannel(), 1024, 0, buildSrc(Objects.VALID, "1234567890"), false},
+                {BufferedChannelUtil.bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(BufferedChannelUtil.createTempFile(), "rw").getChannel(), 1024, 0, buildSrc(Objects.INVALID, "1234567890"), true},
 
         });
     }
     private static ByteBuf buildSrc(Objects object, String string){
+
         switch (object){
             case VALID:
                 ByteBuf ret = Unpooled.buffer(1024, 1024);
@@ -55,8 +59,12 @@ public class BufferedChannelWriteTest {
                 ret.writeBytes(data);
                 return ret;
             case INVALID:
-                //todo
-                return null;
+                //is invalid respect to write operation
+                //while is executed but with a negative reader index
+                ByteBuf mockbb = Mockito.mock(ByteBuf.class);
+                Mockito.doReturn(-1).when(mockbb).readerIndex();
+                Mockito.doReturn(10).when(mockbb).readableBytes();
+                return mockbb;
             default:
                 return null;
         }
@@ -79,16 +87,14 @@ public class BufferedChannelWriteTest {
 
     @Test
     public void testWrite() {
-
-        System.out.println("trap1");
         try {
             this.bufferedChannel.write(this.src);
-            ByteBuf dest = Unpooled.buffer(10);
+            ByteBuf dest = Unpooled.buffer(len);
             this.bufferedChannel.read(dest, 0);
             //System.out.println(dest.readCharSequence(10, Charset.forName("utf-8")));
-            Assert.assertEquals(dest.readCharSequence(10, Charset.forName("utf-8")), src.readCharSequence(10, Charset.forName("utf-8")));
-        } catch (IOException | IllegalArgumentException e) {
-            if(!this.expExc){
+            Assert.assertEquals(dest.readCharSequence(len, Charset.forName("utf-8")), src.readCharSequence(10, Charset.forName("utf-8")));
+        } catch (IOException | IndexOutOfBoundsException | IllegalArgumentException e) {
+            if(!this.expExc) {
                 Assert.fail("exception not expected");
             }
         }
