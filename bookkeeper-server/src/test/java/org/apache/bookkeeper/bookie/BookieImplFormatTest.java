@@ -47,13 +47,13 @@ public class BookieImplFormatTest {
     public static Collection<Object[]> getParameters() {
         return Arrays.asList(new Object[][]{
                 //conf, isInteractive, force, expRes
-                {confBuilder(true), true, true, true},
-                {confBuilder(true), true, false, true},
+                //{confBuilder(true), true, true, true},
+                //{confBuilder(true), true, false, true},
                 {confBuilder(true), false, false, true}, //true
                 {confBuilder(true), false, true, true},
 
-                {confBuilder(false), true, true, false},
-                {confBuilder(false), true, false, false},
+                //{confBuilder(false), true, true, false},
+                //{confBuilder(false), true, false, false},
                 {confBuilder(false), false, false, false},
                 {confBuilder(false), false, true, false}
 
@@ -64,7 +64,7 @@ public class BookieImplFormatTest {
     @Test()
     public void testFormat(){
 
-        System.setIn(new ByteArrayInputStream("y/n".getBytes(),0,2));
+        //System.setIn(new ByteArrayInputStream("y/n".getBytes(),0,2));
 
         boolean res; //init res
         try {

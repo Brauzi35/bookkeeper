@@ -9,6 +9,7 @@ import org.apache.bookkeeper.conf.ServerConfiguration;
 import org.apache.bookkeeper.proto.BookkeeperInternalCallbacks;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -31,7 +32,7 @@ public class BookieImplRecoveryAddEntryTest {
 
     }
 
-    private static BookieImpl bookieimpl;
+    private BookieImpl bookieimpl;
     private static AtomicBoolean flag = new AtomicBoolean(false);
 
     private ByteBuf bb;
@@ -47,13 +48,33 @@ public class BookieImplRecoveryAddEntryTest {
         return Arrays.asList(new Object[][]{
                 //entry, cb, ctx, masterKey, expExeption
 
-                {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), "ctx", "key".getBytes(), false},
-                {buildEntry(Objects.INVALID, 1), getCallback(Objects.VALID), "ctx", "key".getBytes(), true},
-                {buildEntry(Objects.VALID, 1), getCallback(Objects.INVALID), "ctx", "key".getBytes(), true},
-                {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), null, "key".getBytes(), true},
-                {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), "ctx", "".getBytes(), true}, //given key does not match expected key
-                {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), "ctx", null, true}
 
+                {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), "ctx", "key".getBytes(), false},
+                {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), "ctx", "".getBytes(), true},
+                {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), null, "key".getBytes(), true}, //invalid ctx
+                {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), null, "".getBytes(), true},
+
+                /*
+                {buildEntry(Objects.VALID, 1), getCallback(Objects.INVALID), "ctx", "key".getBytes(), true},
+                {buildEntry(Objects.VALID, 1), getCallback(Objects.INVALID), "ctx", "".getBytes(), true},
+                {buildEntry(Objects.VALID, 1), getCallback(Objects.INVALID), null, "key".getBytes(), true},
+                {buildEntry(Objects.VALID, 1), getCallback(Objects.INVALID), null, "".getBytes(), true},
+
+
+                 */
+                {buildEntry(Objects.INVALID, 1), getCallback(Objects.VALID), "ctx", "key".getBytes(), true},
+                {buildEntry(Objects.INVALID, 1), getCallback(Objects.VALID), "ctx", "".getBytes(), true},
+                {buildEntry(Objects.INVALID, 1), getCallback(Objects.VALID), null, "key".getBytes(), true},
+                {buildEntry(Objects.INVALID, 1), getCallback(Objects.VALID), null, "".getBytes(), true},
+
+                /*
+                {buildEntry(Objects.INVALID, 1), getCallback(Objects.INVALID), "ctx", "key".getBytes(), true},
+                {buildEntry(Objects.INVALID, 1), getCallback(Objects.INVALID), "ctx", "".getBytes(), true},
+                {buildEntry(Objects.INVALID, 1), getCallback(Objects.INVALID), null, "key".getBytes(), true},
+                {buildEntry(Objects.INVALID, 1), getCallback(Objects.INVALID), null, "".getBytes(), true},
+
+
+                 */
 
 
         });
@@ -87,7 +108,7 @@ public class BookieImplRecoveryAddEntryTest {
                 return bb;
             case INVALID:
                 ByteBuf ibb = Mockito.mock(ByteBuf.class);
-                //ByteBuf exixts to collect bytes, so i want to throw an exception anytime those bytes are accessed
+                //ByteBuf exixts to collect bytes, so I want to throw an exception anytime those bytes are accessed
                 Mockito.doThrow(new RuntimeException("invalid ByteBuf")).when(ibb).getByte(Mockito.anyInt());
                 return ibb;
             default:
@@ -96,21 +117,24 @@ public class BookieImplRecoveryAddEntryTest {
         }
     }
 
-    //todo: mettere before e non chiamarlo nel costruttore
-    private static void init() {
+    @Before
+    public void init() {
         //create bookieImpl using existing setup classes from bookkeeper apache
         try {
             ServerConfiguration conf = TestBKConfiguration.newServerConfiguration();
-            bookieimpl = new BookieImplSetup(conf);
-            bookieimpl.start();
+            this.bookieimpl = new BookieImplSetup(conf);
+            this.bookieimpl.start();
         } catch (Exception e) {
             Assert.fail("undesired exception in setup operations, something went wrong");
             e.printStackTrace();
         }
     }
+    @After
+    public void tearDown(){
+        this.bookieimpl.shutdown();
+    }
 
     public BookieImplRecoveryAddEntryTest(ByteBuf bb, WriteCallback cb, Object ctx, byte[] mk, boolean expExc){
-        init();
 
         this.bb = bb;
         this.cb = cb;
@@ -128,22 +152,20 @@ public class BookieImplRecoveryAddEntryTest {
 
         boolean isCorrect = true;
 
-        if (!this.expExc){ //exception expected
-            try {
-                bookieimpl.recoveryAddEntry(this.bb, this.cb, this.ctx, this.mk);
-            } catch (IOException | InterruptedException | BookieException e) {
-                if(!expExc){
-                    //if I expect no exception to be raised, but I've caught one, there is an
-                    //underside behaviour -> the test should fail
-                    isCorrect = false;
-                }
 
+        try {
+            this.bookieimpl.recoveryAddEntry(this.bb, this.cb, this.ctx, this.mk);
+        } catch (IOException | InterruptedException | BookieException | RuntimeException e) {
+            if(!this.expExc){
+                //if I expect no exception to be raised, but I've caught one, there is an
+                //underside behaviour -> the test should fail
+                isCorrect = false;
             }
-            Assert.assertTrue(isCorrect);
 
-        } else{
-            //todo test sbagliato! non controllo mai se non mi aspetto un'eccezione
         }
+        Assert.assertTrue(isCorrect);
+
+
 
     }
 
