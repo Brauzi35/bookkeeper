@@ -54,27 +54,26 @@ public class BookieImplRecoveryAddEntryTest {
                 {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), null, "key".getBytes(), true}, //invalid ctx
                 {buildEntry(Objects.VALID, 1), getCallback(Objects.VALID), null, "".getBytes(), true},
 
-                /*
+
                 {buildEntry(Objects.VALID, 1), getCallback(Objects.INVALID), "ctx", "key".getBytes(), true},
                 {buildEntry(Objects.VALID, 1), getCallback(Objects.INVALID), "ctx", "".getBytes(), true},
                 {buildEntry(Objects.VALID, 1), getCallback(Objects.INVALID), null, "key".getBytes(), true},
                 {buildEntry(Objects.VALID, 1), getCallback(Objects.INVALID), null, "".getBytes(), true},
 
 
-                 */
                 {buildEntry(Objects.INVALID, 1), getCallback(Objects.VALID), "ctx", "key".getBytes(), true},
                 {buildEntry(Objects.INVALID, 1), getCallback(Objects.VALID), "ctx", "".getBytes(), true},
                 {buildEntry(Objects.INVALID, 1), getCallback(Objects.VALID), null, "key".getBytes(), true},
                 {buildEntry(Objects.INVALID, 1), getCallback(Objects.VALID), null, "".getBytes(), true},
 
-                /*
+
                 {buildEntry(Objects.INVALID, 1), getCallback(Objects.INVALID), "ctx", "key".getBytes(), true},
                 {buildEntry(Objects.INVALID, 1), getCallback(Objects.INVALID), "ctx", "".getBytes(), true},
                 {buildEntry(Objects.INVALID, 1), getCallback(Objects.INVALID), null, "key".getBytes(), true},
                 {buildEntry(Objects.INVALID, 1), getCallback(Objects.INVALID), null, "".getBytes(), true},
 
 
-                 */
+
 
 
         });
@@ -87,7 +86,11 @@ public class BookieImplRecoveryAddEntryTest {
                 return (rc, ledgerId, entryId, addr, ctx) -> flag.set(rc == BKException.Code.OK);
             case INVALID:
                 return (rc, ledgerId, entryId, addr, ctx) -> {
-                    throw new RuntimeException("Invalid callback");
+                    //throw new RuntimeException("Invalid callback");
+                    WriteCallback wcbMock = Mockito.mock(WriteCallback.class);
+                    //Mockito.when(wcbMock.writeComplete(Mockito.anyInt(), Mockito.anyLong(), Mockito.anyLong(), Mockito.any(), Mockito.any())).thenReturn(new RuntimeException("Invalid callback"))
+                    Mockito.doThrow(new RuntimeException("invalid ByteBuf")).when(wcbMock).writeComplete(Mockito.anyInt(), Mockito.anyLong(), Mockito.anyLong(), Mockito.any(), Mockito.any());
+
                 };
             default:
                 Assert.fail("something went wrong in getCallBack");

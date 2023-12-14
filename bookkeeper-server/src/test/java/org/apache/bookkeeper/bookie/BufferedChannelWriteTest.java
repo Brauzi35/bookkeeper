@@ -41,12 +41,17 @@ public class BufferedChannelWriteTest {
 
     @Parameterized.Parameters
     public static Collection<Object[]> getParameters() throws FileNotFoundException {
-        // Creazione dell'oggetto ByteBuf con le stesse proprietà
         return Arrays.asList(new Object[][]{
                 //ByteBufAllocator allocator, FileChannel fc, int writeCapacity, long unpersistedBytesBound, ByteBuf src, boolean expExc
 
                 {BufferedChannelUtil.bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(BufferedChannelUtil.createTempFile(), "rw").getChannel(), 1024, 0, buildSrc(Objects.VALID, "1234567890"), false},
                 {BufferedChannelUtil.bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(BufferedChannelUtil.createTempFile(), "rw").getChannel(), 1024, 0, buildSrc(Objects.INVALID, "1234567890"), true},
+
+                //V2
+                {BufferedChannelUtil.bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(BufferedChannelUtil.createTempFile(), "rw").getChannel(), 1024, 1, buildSrc(Objects.VALID, "1234567890"), false}, //doRegFlush
+                {BufferedChannelUtil.bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(BufferedChannelUtil.createTempFile(), "rw").getChannel(), 1024, 2048, buildSrc(Objects.VALID, "1234567890"), false}, //doRegFlush only
+                {BufferedChannelUtil.bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(BufferedChannelUtil.createTempFile(), "rw").getChannel(), 6, 0, buildSrc(Objects.VALID, "1234567890"), false}, //iswritable
+
 
         });
     }

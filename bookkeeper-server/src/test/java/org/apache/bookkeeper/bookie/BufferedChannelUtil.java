@@ -21,6 +21,7 @@ public class BufferedChannelUtil {
     enum Objects{
         VALID,
         INVALID,
+        NOTWRITABLE
 
     }
 
@@ -31,6 +32,10 @@ public class BufferedChannelUtil {
                 return Unpooled.buffer(1024, 1024);
             case INVALID:
                 return Unpooled.buffer(0, 0); //for now we return a non writable buffer
+            case NOTWRITABLE:
+                //v2
+                ByteBuf bbs = Unpooled.buffer(1024, 1024);
+
             default:
                 return null;
         }

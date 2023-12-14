@@ -473,11 +473,16 @@
               <verbose>true</verbose>
               <targetClasses>
                 <!--param>org.apache.bookkeeper.client.BookKeeper</param-->
-                <param>org.apache.bookkeeper.bookie.storage.ldb.ReadCache</param>
+                <param>org.apache.bookkeeper.bookie.BookieImpl</param>
+                <param>org.apache.bookkeeper.bookie.BufferedChannel</param>
               </targetClasses>
               <targetTests>
 
-                <param>org.apache.bookkeeper.bookie.storage.ldb.ReadCacheTest</param>
+                <param>org.apache.bookkeeper.bookie.BookieImplFormatTest</param>
+                <param>org.apache.bookkeeper.bookie.BookieImplRecoveryAddEntryTest</param>
+                <param>org.apache.bookkeeper.bookie.BufferedChannelReadTest</param>
+                <param>org.apache.bookkeeper.bookie.BufferedChannelWriteTest</param>
+
 
               </targetTests>
             </configuration>

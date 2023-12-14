@@ -64,7 +64,7 @@ public class BookieImplFormatTest {
     @Test()
     public void testFormat(){
 
-        //System.setIn(new ByteArrayInputStream("y/n".getBytes(),0,2));
+        System.setIn(new ByteArrayInputStream("y/n".getBytes(),0,2));
 
         boolean res; //init res
         try {
