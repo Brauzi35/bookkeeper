@@ -72,6 +72,7 @@ public class BufferedChannelReadTest {
         return Arrays.asList(new Object[][]{
                 //ByteBufAllocator allocator, FileChannel fc, int writeCapacity, long unpersistedBytesBound, ByteBuf dest, long pos, int lenght
 
+
                 {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), -1, -1, false},
                 {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), -1, 0, false},
                 {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), -1, 1, true},
@@ -94,6 +95,18 @@ public class BufferedChannelReadTest {
 
 
 
+
+
+                //v2
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), 0, 1025, true}, //read buffer start position <= pos
+
+                /*
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 1024, 0, destBuilder(BufferedChannelUtil.Objects.VALID), 0, 1025, true}, //read buffer start position <= pos
+                {bbAllocator(BufferedChannelUtil.Objects.VALID),new RandomAccessFile(createTempFile(), "rw").getChannel(), 0, 0, destBuilder(BufferedChannelUtil.Objects.VALID), 50, 1024, true}, //read buffer start position <= pos
+
+
+                 */
+
         });
     }
 
@@ -104,6 +117,7 @@ public class BufferedChannelReadTest {
         if(this.lenght >= 0){
             lenW = this.lenght;
         }
+
         ByteBuf writeBuf = Unpooled.buffer(lenW, lenW);
         byte [] data = new byte[lenW];
         Random random = new Random();

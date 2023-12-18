@@ -21,7 +21,7 @@ public class BufferedChannelUtil {
     enum Objects{
         VALID,
         INVALID,
-        NOTWRITABLE
+        NULLBUFF
 
     }
 
@@ -32,9 +32,7 @@ public class BufferedChannelUtil {
                 return Unpooled.buffer(1024, 1024);
             case INVALID:
                 return Unpooled.buffer(0, 0); //for now we return a non writable buffer
-            case NOTWRITABLE:
-                //v2
-                ByteBuf bbs = Unpooled.buffer(1024, 1024);
+
 
             default:
                 return null;
@@ -58,9 +56,19 @@ public class BufferedChannelUtil {
                 return UnpooledByteBufAllocator.DEFAULT;
             case INVALID:
 
-                UnpooledByteBufAllocator mockUBBA = Mockito.mock(UnpooledByteBufAllocator.class);
-                Mockito.doReturn(null).when(mockUBBA).directBuffer(Mockito.anyInt());
-                return mockUBBA; //in realtà non è proprio invalid...
+                //return UnpooledByteBufAllocatorInvalid.DEFAULT;
+                return null;
+            case NULLBUFF:
+                //v2
+                /*non posso fare spy
+                UnpooledByteBufAllocator bb = UnpooledByteBufAllocator.DEFAULT;
+                UnpooledByteBufAllocator bbs = Mockito.spy(bb);
+                Mockito.when(bbs.directBuffer(Mockito.anyInt())).thenReturn(null);
+                return bbs;
+
+                 */
+
+
             default:
                 return null;
         }
