@@ -1180,6 +1180,7 @@ public class BookieImpl extends BookieCriticalThread implements Bookie {
                     journalDir.exists() && journalDir.isDirectory() ? journalDir.list() : null;
             if (journalDirFiles != null && journalDirFiles.length != 0) {
                 try {
+                    System.out.println("entrato try");
                     boolean confirm = false;
                     if (!isInteractive) {
                         // If non interactive and force is set, then delete old
@@ -1192,6 +1193,7 @@ public class BookieImpl extends BookieCriticalThread implements Bookie {
 
                     if (!confirm) {
                         LOG.error("Bookie format aborted!!");
+                        System.out.println("entrato !confirm");
                         return false;
                     }
                 } catch (IOException e) {
