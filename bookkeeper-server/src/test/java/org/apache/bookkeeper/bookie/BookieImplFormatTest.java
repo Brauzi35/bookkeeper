@@ -34,6 +34,7 @@ public class BookieImplFormatTest {
         NONULL,
         CLEANDIR_JDIR,
         CLEANDIR_DIR,
+        METADIR,
 
 
     }
@@ -43,10 +44,12 @@ public class BookieImplFormatTest {
         ServerConfiguration ret = TestBKConfiguration.newServerConfiguration();
 
         switch (ob){
+            //todo: remove dup code
             case INVALID:
                 ServerConfiguration spy = spy(ret);
                 Mockito.when(spy.getJournalDirs()).thenReturn(null); //new File[]{}
                 ret = spy;
+                return ret;
             case NONULL:
                 ServerConfiguration spy2 = spy(ret);
                 File[] f_list = new File[1];
@@ -62,8 +65,10 @@ public class BookieImplFormatTest {
 
                 Mockito.when(spy2.getJournalDirs()).thenReturn(f_list);
                 ret = spy2;
-            /*
+                return ret;
+
             case CLEANDIR_JDIR:
+
                 ServerConfiguration spy3 = spy(ret);
                 File[] f_list3 = new File[1];
                 File f3 = Mockito.mock(File.class);
@@ -78,14 +83,41 @@ public class BookieImplFormatTest {
 
                 Mockito.when(spy3.getJournalDirs()).thenReturn(f_list3);
                 ret = spy3;
+                return ret;
+            case CLEANDIR_DIR:
+
+                ServerConfiguration spy4 = spy(ret);
+                File[] f_list4 = new File[1];
+                File f4 = Mockito.mock(File.class);
+                Mockito.when(f4.exists()).thenReturn(false); //false
+                Mockito.when(f4.isDirectory()).thenReturn(true);
+                Mockito.when(f4.mkdirs()).thenReturn(false); //false
+                String[] s_list4 = new String[2];
+                s_list4[0] = "test1";
+                s_list4[1] = "test2";
+                Mockito.when(f4.list()).thenReturn(s_list4);
+                f_list4[0] = f4;
+
+                Mockito.when(spy4.getIndexDirs()).thenReturn(f_list4);
+                ret = spy4;
+                return ret;
+            case METADIR:
+
+                ServerConfiguration spy5 = spy(ret);
 
 
-             */
-//NON FUNZIONA PIù
+                Mockito.when(spy5.getGcEntryLogMetadataCachePath()).thenReturn("test1");
+                ret = spy5;
+                return ret;
+
+            default:
+                return ret;
+
+
+
+
         }
 
-
-        return ret;
     }
     public BookieImplFormatTest(ServerConfiguration conf, boolean isInteractive, boolean force, boolean expRes) {
         this.conf = conf;
@@ -112,7 +144,9 @@ public class BookieImplFormatTest {
                 //v2 test
                 {confBuilder(Objects.NONULL), false, false, false},
                 {confBuilder(Objects.NONULL), false, true, true},
-                //{confBuilder(Objects.CLEANDIR_JDIR), false, true, false},
+                {confBuilder(Objects.CLEANDIR_JDIR), false, true, false},
+                {confBuilder(Objects.CLEANDIR_DIR), false, true, false},
+                {confBuilder(Objects.METADIR), false, true, true},
         });
     }
 
