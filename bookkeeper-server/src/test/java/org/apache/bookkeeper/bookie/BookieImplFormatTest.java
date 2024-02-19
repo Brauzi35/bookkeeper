@@ -142,11 +142,14 @@ public class BookieImplFormatTest {
 
 
                 //v2 test
+
                 {confBuilder(Objects.NONULL), false, false, false},
                 {confBuilder(Objects.NONULL), false, true, true},
                 {confBuilder(Objects.CLEANDIR_JDIR), false, true, false},
                 {confBuilder(Objects.CLEANDIR_DIR), false, true, false},
                 {confBuilder(Objects.METADIR), false, true, true},
+
+
         });
     }
 
