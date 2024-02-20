@@ -1,9 +1,9 @@
 name: jacoco
 on:
   push:
-    branches: ["master"]
+    branches: ["testv2"]
   pull_request:
-    branches: ["master"]
+    branches: ["testv2"]
 jobs:
   build:
     runs-on: ubuntu-latest
